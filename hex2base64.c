@@ -26,7 +26,7 @@ int main(int argc, char ** argv)
         printf("Sorry! Not correct.\n  Expected: %s\n       Got: %s\n",
                TEST_B64_STR,b64);
     }else{
-        printf("Ok!");
+        printf("Ok!\n");
     }
 
     if(b64){
@@ -53,9 +53,6 @@ static void hex2val(const char * hexStr, struct bigint * bi)
     bi->n = (hexLen+1)/2;
     bi->bytes = (uint8_t*)malloc(bi->n);
 
-    printf("In hex2Val. Hexlen: %d, bi->n: %d\n",
-           hexLen,bi->n);
-
     for(i=hexLen-1,j=0; i>=0; i--,j++){
         uint8_t hexVal = hexChar2int(hexStr[i]);
         int bIndex = bi->n - 1 - j/2;
@@ -64,8 +61,6 @@ static void hex2val(const char * hexStr, struct bigint * bi)
         }else{
             bi->bytes[bIndex] += hexVal<<4;
         }
-        printf("i: %d, char: %c, hexVal: 0x%x, bIndex: %d, byteVal: 0x%x\n",
-               i,hexStr[i],hexVal,bIndex,bi->bytes[bIndex]);
     }
 }
 
@@ -92,9 +87,6 @@ static void val2base64str(const struct bigint * bi, char ** b64str)
     str = *b64str;
     str[l] = 0;
 
-    printf("In val2base64str. bi->n: %d, outLen: %d\n",
-           bi->n,l);
-
     for(ob=l-1,ib=bi->n-1,s=0; ob>=0; ob--)
     {
         uint16_t mask = 0x003F << s;
@@ -102,8 +94,6 @@ static void val2base64str(const struct bigint * bi, char ** b64str)
         uint16_t h = (ib > 0 ? bi->bytes[ib-1] : 0);
         uint16_t v = ((h << 8) | (l & 0xFF));
         str[ob] = val2base64char((v & mask) >> s);
-        printf("ib: %d, s: %d, mask: 0x%02x, hl: 0x%02x%02x, v: 0x%04x, str[ob]: %c\n",
-               ib,s,mask,h,l,v,str[ob]);
         s += 6;
         if(s >= 8){
             s -= 8;
