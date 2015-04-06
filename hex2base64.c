@@ -12,6 +12,7 @@ struct bigint
     uint32_t n;
 };
 
+static void test(const char * hex, const char * expected);
 static void hex2base64(const char * hexStr, char ** b64);
 static void hex2val(const char * hexStr, struct bigint * bi);
 static void val2base64str(const struct bigint * bi, char ** b64str);
@@ -19,23 +20,31 @@ static uint8_t hexChar2int(char c);
 
 int main(int argc, char ** argv)
 {
+    test(TEST_HEX_STR,TEST_B64_STR);
+    test("0","A");
+    test("1","B");
+    test("FF","D/");
+    test("380ABCDEF","OAq83v");
+    return 0;
+}
+
+static void test(const char * hex, const char * expected)
+{
     char * b64 = NULL;
 
-    hex2base64(TEST_HEX_STR,&b64);
-    if(strcmp(b64,TEST_B64_STR) != 0){
+    hex2base64(hex,&b64);
+    if(strcmp(b64,expected) != 0){
         printf("Sorry! Not correct.\n  Expected: %s\n       Got: %s\n",
-               TEST_B64_STR,b64);
+               expected,b64);
     }else{
-        printf("Ok!\n");
+        printf("    Hex: %s\n Base64: %s\nOk!\n",
+               hex,b64);
     }
 
     if(b64){
         free(b64);
     }
-
-    return 0;
 }
-
 
 static void hex2base64(const char * hexStr, char ** b64str)
 {
@@ -99,6 +108,17 @@ static void val2base64str(const struct bigint * bi, char ** b64str)
             s -= 8;
             ib--;
         }
+    }
+    int newLen = l;
+    for(ob = 0; ob < l-1 && str[ob] == 'A';ob++){
+        newLen--;
+    }
+    if(newLen < l){ 
+        char * newStr = malloc(newLen+1);
+        memcpy(newStr,&str[l - newLen],newLen+1);
+
+        free(str);
+        *b64str = newStr;
     }
 }
 
