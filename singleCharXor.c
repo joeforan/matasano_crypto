@@ -48,50 +48,23 @@ void try_singleCharXor()
     int maxScore = 0;
     uint8_t bestKey = 0;
     char * decryptedStr = NULL;
-    int i,j;
+    int i;
 
     hex2val(ENCRYPTED_MSG,&enc);
 
-    dec.n = enc.n;
-    dec.bytes = (uint8_t*)malloc(dec.n);
     for(i=0; i<256; i++){   
-        uint8_t x = i;  
-        int count[27] = {0};
-        int score = 0;
-#ifdef DEBUG_CHG3
-        char * debugStr = NULL;
-#endif
+        int score = singleCharXor(&enc,(uint8_t)i);
         
-
-        for(j=0; j<enc.n; j++){
-            uint8_t c = x ^ enc.bytes[j];
-            dec.bytes[j] = c;
-            if(c >= 'a' && c <= 'z'){
-                count[c-'a']++;
-            }else if(c >= 'A' && c<= 'Z'){
-                count[c-'A']++;
-            }else if(c == ' '){
-                count[26]++;
-            }
-
-        }
-        for(j=0; j<27; j++){
-            score += count[j]*LetterFreq[j];
-        }
         if(score > maxScore){
             maxScore = score;
-            bestKey = x;
+            bestKey = i;
         }
-#ifdef DEBUG_CHG3
-        bytesToCharStr(&dec,&debugStr);
-        printf("key: 0x%x,(%c). String: %s. Score: %d\n",
-               x, (x >= 0x20 && x < 0x80 ? (char)x : '?'), 
-               debugStr,score);
-#endif
     }
 
-    for(j=0; j<enc.n; j++){
-        dec.bytes[j] = bestKey ^ enc.bytes[j];
+    dec.n = enc.n;
+    dec.bytes = (uint8_t*)malloc(dec.n);
+    for(i=0; i<enc.n; i++){
+        dec.bytes[i] = bestKey ^ enc.bytes[i];
     }
 
     bytesToCharStr(&dec,&decryptedStr);
@@ -106,3 +79,33 @@ void try_singleCharXor()
     free(dec.bytes);
 }
 
+int singleCharXor(const struct bigint * bytes, uint8_t x)
+{
+    int count[27] = {0};
+    int score = 0;
+    int i;
+#ifdef DEBUG_CHG3
+    char * debugStr = NULL;
+#endif
+    for(i=0; i<bytes->n; i++){
+        uint8_t c = x ^ bytes->bytes[i];
+        if(c >= 'a' && c <= 'z'){
+            count[c-'a']++;
+        }else if(c >= 'A' && c<= 'Z'){
+            count[c-'A']++;
+        }else if(c == ' '){
+            count[26]++;
+        }
+    }
+
+    for(i=0; i<27; i++){
+        score += count[i]*LetterFreq[i];
+    }
+#ifdef DEBUG_CHG3
+    bytesToCharStr(&dec,&debugStr);
+    printf("key: 0x%x,(%c). String: %s. Score: %d\n",
+           x, (x >= 0x20 && x < 0x80 ? (char)x : '?'), 
+           debugStr,score);
+#endif
+    return score;
+}
