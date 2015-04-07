@@ -1,4 +1,6 @@
 #include "matasano.h"
+#include <string.h>
+#include <stdlib.h>
 
 static char val2base64char(uint8_t val);
 static uint8_t hexChar2int(char c);
@@ -79,6 +81,21 @@ void val2base64str(const struct bigint * bi, char ** b64str)
 
         free(str);
         *b64str = newStr;
+    }
+}
+
+void bytesToCharStr(const struct bigint* bi, char ** str)
+{
+    int l = bi->n +1;
+    int i;
+    *str = (char*)malloc(l);
+    (*str)[l-1] = 0;
+    for(i = 0; i<l-1; i++){ 
+        char c = '_';
+        if(bi->bytes[i] >= 0x20 && bi->bytes[i] < 0x80){
+            c = bi->bytes[i];
+        }
+        (*str)[i] = c;
     }
 }
 

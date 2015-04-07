@@ -12,5 +12,5 @@ struct bigint
 void hex2val(const char * hexStr, struct bigint * bi);
 void val2hex(const struct bigint * val, char ** hexStr);
 void val2base64str(const struct bigint * bi, char ** b64str);
-
+void bytesToCharStr(const struct bigint* bi, char ** str);
 #endif
