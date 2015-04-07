@@ -1,4 +1,4 @@
-#include "challenge3.h"
+#include "singleCharXor.h"
 #include "matasano.h"
 #include <stdlib.h>
 #include <stdio.h>
@@ -42,7 +42,7 @@ struct charFreq{
     uint8_t c;
 };
 
-void doChallenge3()
+void try_singleCharXor()
 {
     struct bigint enc,dec;
     int maxScore = 0;
