@@ -1,2 +1,3 @@
-hex2base64
-fixedXor
+*.o
+*.d
+matasano.bin
