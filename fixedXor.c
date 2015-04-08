@@ -2,17 +2,11 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
-
-struct bigint
-{
-	uint8_t * bytes;
-	uint32_t n;
-};
+#include "matasano.h"
 
 static void test(const char * str1, const char * str2, const char * expected);
 static void xor(const struct bigint * a, const struct bigint * b,
 				struct bigint * res);
-static uint8_t hexChar2int(char c);
 
 void test_fixedXor()
 {
