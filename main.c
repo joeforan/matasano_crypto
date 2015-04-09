@@ -4,6 +4,7 @@
 #include "singleCharXor.h"
 #include "detectSingleCharXor.h"
 #include "repeatingKeyXor.h"
+#include "hammingDistance.h"
 
 int main(int argc, char ** argv)
 {
@@ -12,6 +13,7 @@ int main(int argc, char ** argv)
     try_singleCharXor();
     detectSingleCharXor();
     test_repeatingKeyXor();
-
+    test_hammingDistance();
+    
     return 0;
 }
