@@ -3,6 +3,7 @@
 #include "fixedXor.h"
 #include "singleCharXor.h"
 #include "detectSingleCharXor.h"
+#include "repeatingKeyXor.h"
 
 int main(int argc, char ** argv)
 {
@@ -10,6 +11,7 @@ int main(int argc, char ** argv)
     test_fixedXor();
     try_singleCharXor();
     detectSingleCharXor();
+    test_repeatingKeyXor();
 
     return 0;
 }

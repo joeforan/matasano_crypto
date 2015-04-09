@@ -28,18 +28,15 @@ void val2hex(const struct bigint * val, char ** hexStr)
     int hexLen = val->n * 2;
     char * str;
     int i,j;
-    if(val->bytes[0] < 16){
-        hexLen --;
-    }
     str = *hexStr = malloc(hexLen+1);
     
     str[hexLen] = 0;
-    for(i=hexLen-1,j=0; i>=0; i--,j++){
+    for(i=0,j=0; i<hexLen; i++,j++){
         uint8_t v;
         if(j %2 == 0){  
-            v = val->bytes[i/2] & 0x0F;
-        }else{
             v = (val->bytes[i/2] & 0xF0) >> 4;
+        }else{
+            v = val->bytes[i/2] & 0x0F;
         }
         if(v < 10){
             str[i] = '0' + v;
@@ -125,3 +122,13 @@ static uint8_t hexChar2int(char c)
     return 10 + c - 'a';
 }
 
+void str2val(const char * str, struct bigint * bi)
+{
+    int i;
+    bi->n = strlen(str);
+    bi->bytes = malloc(bi->n);
+
+    for(i=0; *str; i++,str++){
+        bi->bytes[i] = *str;
+    }
+}
