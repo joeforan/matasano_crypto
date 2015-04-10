@@ -132,3 +132,58 @@ void str2val(const char * str, struct bigint * bi)
         bi->bytes[i] = *str;
     }
 }
+
+static uint8_t base64char2byte(uint8_t b)
+{
+    if(b >= 'A' && b <= 'Z'){
+        return b-'A';
+    }
+    if(b >= 'a' && b <= 'z'){
+        return 26+(b-'a');
+    }
+    if(b >= '0' && b <= '9'){
+        return 52+(b-'0');
+    }
+    if(b == '+'){
+        return 62;
+    }
+    if(b == '/'){
+        return 63;
+    }
+    return 0xFF;
+}
+
+
+
+void base642val(const char * str, struct bigint * val)
+{
+    int n = strlen(str);
+    int i,j,s;
+    val->n = (n*6+5)/8;
+    val->bytes = malloc(val->n);
+    memset(val->bytes,0,val->n);
+
+    for(i=n-1,j=val->n-1,s=0;i>=0;i--){
+        uint16_t mask = 0x3F << s;
+        uint16_t lm = mask & 0x00FF;
+        uint16_t hm = (mask & 0xFF00);
+        uint8_t v = base64char2byte(str[i]);    
+        uint16_t sv = ((uint16_t)v) << s;
+        if(v == 0xFF){
+            free(val->bytes);
+            val->n = 0;
+            return;
+        }
+        val->bytes[j] = (val->bytes[j] & ~lm) | (sv & lm);    
+        
+        if(s >= 2){
+            j--;
+            if(j >= 0){
+                val->bytes[j] = (sv & hm) >> 8;
+            }
+        }
+        s = (s + 6)%8;
+    }
+        
+}
+
