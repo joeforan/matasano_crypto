@@ -5,6 +5,7 @@
 #include <limits.h>
 
 #define ENCRYPTED_MSG "1b37373331363f78151b7f2b783431333d78397828372d363c78373e783a393b3736"
+//#define DEBUG_CHG3
 
 //Taken from https://en.wikipedia.org/wiki/Letter_frequency#Relative_frequencies_of_letters_in_the_English_language
 static const int LetterFreq[27] = { 
@@ -86,15 +87,26 @@ int singleCharXor(const struct bigint * bytes, uint8_t x)
     int i;
 #ifdef DEBUG_CHG3
     char * debugStr = NULL;
+    int other = 0;
+    struct bigint dec;  
+    dec.n = bytes->n;
+    dec.bytes = malloc(dec.n);
 #endif
     for(i=0; i<bytes->n; i++){
         uint8_t c = x ^ bytes->bytes[i];
+#ifdef DEBUG_CHG3
+        dec.bytes[i] = c;
+#endif
         if(c >= 'a' && c <= 'z'){
             count[c-'a']++;
         }else if(c >= 'A' && c<= 'Z'){
             count[c-'A']++;
         }else if(c == ' '){
             count[26]++;
+#ifdef DEBUG_CHG3
+        }else{
+            other++;
+#endif
         }
     }
 
@@ -103,9 +115,10 @@ int singleCharXor(const struct bigint * bytes, uint8_t x)
     }
 #ifdef DEBUG_CHG3
     bytesToCharStr(&dec,&debugStr);
-    printf("key: 0x%x,(%c). String: %s. Score: %d\n",
+    printf("key: 0x%x,(%c). String: %s. Score: %d. Other: %d\n",
            x, (x >= 0x20 && x < 0x80 ? (char)x : '?'), 
-           debugStr,score);
+           debugStr,score,other);
+    free(dec.bytes);
 #endif
     return score;
 }

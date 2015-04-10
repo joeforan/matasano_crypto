@@ -2,6 +2,7 @@
 #include "matasano.h"
 #include "hammingDistance.h"
 #include "detectSingleCharXor.h"
+#include "repeatingKeyXor.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -48,10 +49,10 @@ static int read_int(struct bigint * bi)
         newString[newSize-1] = '\0';
         fullString = newString;
         bufSize = newSize;
-        free(line);
-        line = NULL;
-        n = 0;
     }
+    free(line);
+    line = NULL;
+    n = 0;
     
 #ifdef DEBUG_CHALLENGE_6
     printf("Read string from file:\n%s\nLength: %d\n",fullString,(int)bufSize);
@@ -134,20 +135,67 @@ void try_challenge6()
     read_int(&bi);
     printf("Bi Size: %d\n",bi.n);
 
+#if 1   
+    int maxScore = 0;
+    struct bigint bestKey = {0};
+    for(keysize = 2; keysize <= 50; keysize++){
+        int i,j;
+        double keyScore = 0;
+        struct bigint code;
+        code.n = keysize;   
+        code.bytes = malloc(keysize);
+        for(i=0; i<keysize; i++){
+            int sz = (bi.n/keysize);
+            struct bigint local;
+            int maxScore = 0;
+            if(i+keysize*sz < bi.n){
+                sz++;
+            }
+            local.n = sz;
+            local.bytes = malloc(sz);
+
+            for(j=0; j<sz; j++){    
+                local.bytes[j] = bi.bytes[i+j*keysize];
+            }
+            
+            code.bytes[i] = getBestXorScore(&local,&maxScore);
+            free(local.bytes);
+            keyScore += maxScore;
+        }   
+        keyScore /= keysize;
+        if(keyScore > maxScore){
+            maxScore = keysize;
+            if(bestKey.bytes){
+                free(bestKey.bytes);
+            }
+            bestKey.n = keysize;    
+            bestKey.bytes = malloc(keysize);
+            memcpy(bestKey.bytes,code.bytes,keysize);
+        }
+        free(code.bytes);
+    }
+    applyRepeatingKeyXor(&bi,&bestKey,&decoded);
+    bytesToCharStr(&decoded,&decodedStr);
+    printf("Decoded: \n%s\n",decodedStr);
+    
+#else
     keysize = deduce_key_size(&bi);
     printf("Min Keysize: %d\n",keysize);
 
     if(keysize > 0){
-        int sz = bi.n/keysize;
         int i,j;
-        printf("Sz: %d\n",sz);
         fflush(stdout);
-        decoded.n = bi.n;
-        decoded.bytes = malloc(bi.n);
+        struct bigint code;
+        code.n = keysize;
+        code.bytes = malloc(keysize);
         for(i=0; i<keysize; i++){
+            int sz = (bi.n/keysize);
             struct bigint local;
             int maxScore = 0;
-            uint8_t c;
+            if(i+keysize*sz < bi.n){
+                sz++;
+            }
+            printf("Sz: %d\n",sz);
             local.n = sz;
             local.bytes = malloc(sz);
 #ifdef DEBUG_CHALLENGE_6
@@ -163,25 +211,15 @@ void try_challenge6()
             fflush(stdout);
 #endif
             
-            c = getBestXorScore(&local,&maxScore);
+            code.bytes[i] = getBestXorScore(&local,&maxScore);
 #ifdef DEBUG_CHALLENGE_6
-            printf("Code: 0x%02x\n",c);
-            fflush(stdout);
-#endif
-            for(j=i; j<bi.n; j+=keysize){
-                decoded.bytes[j] = c ^ bi.bytes[j];
-            }
-#ifdef DEBUG_CHALLENGE_6
-            printf("Freeing local bytes: 0x%lx, j: %d\n",(unsigned long)local.bytes,j);
+            printf("Code: 0x%02x (%c)\n",code.bytes[i],((code.bytes[i] >= 0x20 && code.bytes[i] < 0x80) ? code.bytes[i] : '_'));
             fflush(stdout);
 #endif
             free(local.bytes);
 
-#ifdef DEBUG_CHALLENGE_6
-            printf("Freed local bytes\n");
-            fflush(stdout);
-#endif
-        }
+        }   
+        applyRepeatingKeyXor(&bi,&code,&decoded);
         bytesToCharStr(&decoded,&decodedStr);
         printf("Decoded: \n%s\n",decodedStr);
 #ifdef DEBUG_CHALLENGE_6
@@ -190,6 +228,8 @@ void try_challenge6()
         
         free(decoded.bytes);
         free(decodedStr);
+        free(code.bytes);
     }
+#endif
     free(bi.bytes);
 }
