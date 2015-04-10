@@ -5,6 +5,7 @@
 #include "detectSingleCharXor.h"
 #include "repeatingKeyXor.h"
 #include "hammingDistance.h"
+#include "challenge6.h"
 
 int main(int argc, char ** argv)
 {
@@ -14,6 +15,7 @@ int main(int argc, char ** argv)
     detectSingleCharXor();
     test_repeatingKeyXor();
     test_hammingDistance();
+    try_challenge6();
     
     return 0;
 }

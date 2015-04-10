@@ -157,8 +157,10 @@ static uint8_t base64char2byte(uint8_t b)
 
 void base642val(const char * str, struct bigint * val)
 {
-    int n = strlen(str);
-    int i,j,s;
+    int i,j,s,n;
+    const char * end;
+    for(end = str,n=0; *end && isB64char(*end); ++end,n++);
+        
     val->n = (n*6+5)/8;
     val->bytes = malloc(val->n);
     memset(val->bytes,0,val->n);
@@ -170,9 +172,9 @@ void base642val(const char * str, struct bigint * val)
         uint8_t v = base64char2byte(str[i]);    
         uint16_t sv = ((uint16_t)v) << s;
         if(v == 0xFF){
-            free(val->bytes);
-            val->n = 0;
-            return;
+            val->n -= j;
+            val->bytes = realloc(val->bytes,val->n);
+            break;
         }
         val->bytes[j] = (val->bytes[j] & ~lm) | (sv & lm);    
         
@@ -187,3 +189,10 @@ void base642val(const char * str, struct bigint * val)
         
 }
 
+int isB64char(uint8_t c)
+{
+    return (c >= 'A' && c <= 'Z') ||
+        (c >= 'a' && c <= 'z') ||
+        (c >= '0' && c<= '9') ||
+        c == '+' || c == '/';
+}

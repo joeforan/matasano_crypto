@@ -15,4 +15,5 @@ void val2base64str(const struct bigint * bi, char ** b64str);
 void bytesToCharStr(const struct bigint* bi, char ** str);
 void str2val(const char * str, struct bigint * val);
 void base642val(const char * str, struct bigint * val);
+int isB64char(uint8_t c);
 #endif
