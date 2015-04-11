@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <limits.h>
+#include <math.h>
 
 #define ENCRYPTED_MSG "1b37373331363f78151b7f2b783431333d78397828372d363c78373e783a393b3736"
 //#define DEBUG_CHG3
@@ -83,11 +84,17 @@ void try_singleCharXor()
 int singleCharXor(const struct bigint * bytes, uint8_t x)
 {
     int count[27] = {0};
-    int score = 0;
+    uint64_t covar = 0;
+	uint64_t freqSqTotal = 0;
+	uint64_t countSqTotal = 0;
+	uint64_t freqSum = 0;
+	uint64_t countSum = 0;
     int i;
+    int other = 0;
+	uint64_t upper,lower;
+	int score;
 #ifdef DEBUG_CHG3
     char * debugStr = NULL;
-    int other = 0;
     struct bigint dec;  
     dec.n = bytes->n;
     dec.bytes = malloc(dec.n);
@@ -99,20 +106,28 @@ int singleCharXor(const struct bigint * bytes, uint8_t x)
 #endif
         if(c >= 'a' && c <= 'z'){
             count[c-'a']++;
-        }else if(c >= 'A' && c<= 'Z'){
-            count[c-'A']++;
+//        }else if(c >= 'A' && c<= 'Z'){
+			//          count[c-'A']++;
         }else if(c == ' '){
             count[26]++;
-#ifdef DEBUG_CHG3
         }else{
             other++;
-#endif
         }
     }
 
     for(i=0; i<27; i++){
-        score += count[i]*LetterFreq[i];
+		freqSum += LetterFreq[i];
+		freqSqTotal += LetterFreq[i] * LetterFreq[i];
+		countSum += count[i];
+		countSqTotal += count[i] * count[i];
+        covar += count[i]*LetterFreq[i];
     }
+	countSum += other;
+	countSqTotal += other*other;
+
+	upper = (covar*28-(countSum*freqSum));
+	lower = (countSqTotal*28-countSum*countSum)*(freqSqTotal*28-freqSum*freqSum);
+	score = 1000*upper*upper/lower;
 #ifdef DEBUG_CHG3
     bytesToCharStr(&dec,&debugStr);
     printf("key: 0x%x,(%c). String: %s. Score: %d. Other: %d\n",

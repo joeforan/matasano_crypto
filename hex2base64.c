@@ -13,10 +13,24 @@ static void test(const char * hex, const char * expected);
 void test_hex2base64()
 {
     test(TEST_HEX_STR,TEST_B64_STR);
-    test("0","A");
-    test("1","B");
-    test("FF","D/");
-    test("380ABCDEF","OAq83v");
+    test("0","AA");
+    test("1","AQ");
+    test("2","Ag");
+    test("3","Aw");
+    test("4","BA");
+    test("5","BQ");
+    test("6","Bg");
+    test("7","Bw");
+    test("8","CA");
+    test("9","CQ");
+    test("A","Cg");
+    test("B","Cw");
+    test("C","DA");
+    test("D","DQ");
+    test("E","Dg");
+    test("F","Dw");
+    test("FF","/w");
+	test("380ABCDEF","A4Crze8");
 }
 
 static void test(const char * hex, const char * expected)

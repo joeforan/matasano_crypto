@@ -53,31 +53,20 @@ void val2base64str(const struct bigint * bi, char ** b64str)
     int ib,s,ob;
     *b64str = (char *)malloc(l+1);
     str = *b64str;
-    str[l] = 0;
+	memset(str,0,l+1);
 
-    for(ob=l-1,ib=bi->n-1,s=0; ob>=0; ob--)
+    for(ob=0,ib=0,s=0; ob<l; ob++)
     {
-        uint16_t mask = 0x003F << s;
-        uint16_t l = bi->bytes[ib];
-        uint16_t h = (ib > 0 ? bi->bytes[ib-1] : 0);
-        uint16_t v = ((h << 8) | (l & 0xFF));
-        str[ob] = val2base64char((v & mask) >> s);
+        uint16_t mask = 0xFC00 >> s;
+        uint16_t hb = bi->bytes[ib];
+        uint16_t lb = (ib < (bi->n)-1 ? bi->bytes[ib+1] : 0);
+        uint16_t v = ((hb << 8) | (lb & 0xFF));
+        str[ob] = val2base64char((v & mask) >> (10-s));
         s += 6;
         if(s >= 8){
             s -= 8;
-            ib--;
+            ib++;
         }
-    }
-    int newLen = l;
-    for(ob = 0; ob < l-1 && str[ob] == 'A';ob++){
-        newLen--;
-    }
-    if(newLen < l){ 
-        char * newStr = malloc(newLen+1);
-        memcpy(newStr,&str[l - newLen],newLen+1);
-
-        free(str);
-        *b64str = newStr;
     }
 }
 
@@ -89,9 +78,10 @@ void bytesToCharStr(const struct bigint* bi, char ** str)
     (*str)[l-1] = 0;
     for(i = 0; i<l-1; i++){ 
         char c = '_';
-        if(bi->bytes[i] >= 0x20 && bi->bytes[i] < 0x80){
+        if((bi->bytes[i] >= 0x20 && bi->bytes[i] < 0x80) || bi->bytes[i] == '\n'){
             c = bi->bytes[i];
         }
+		
         (*str)[i] = c;
     }
 }
@@ -161,27 +151,23 @@ void base642val(const char * str, struct bigint * val)
     const char * end;
     for(end = str,n=0; *end && isB64char(*end); ++end,n++);
         
-    val->n = (n*6+5)/8;
+    val->n = (n*6)/8;
     val->bytes = malloc(val->n);
     memset(val->bytes,0,val->n);
 
-    for(i=n-1,j=val->n-1,s=0;i>=0;i--){
-        uint16_t mask = 0x3F << s;
-        uint16_t lm = mask & 0x00FF;
-        uint16_t hm = (mask & 0xFF00);
-        uint8_t v = base64char2byte(str[i]);    
-        uint16_t sv = ((uint16_t)v) << s;
-        if(v == 0xFF){
-            val->n -= j;
-            val->bytes = realloc(val->bytes,val->n);
-            break;
-        }
-        val->bytes[j] = (val->bytes[j] & ~lm) | (sv & lm);    
+    for(i=0,j=0,s=0;i<n;i++){
+        uint16_t mask = 0xFC00 >> s;
+        uint8_t lm = mask & 0x00FF;
+        uint8_t hm = (mask & 0xFF00)>>8;
+        uint16_t v = base64char2byte(str[i]);
+        uint16_t sv = ((uint16_t)v) << (10-s);
+
+        val->bytes[j] = (val->bytes[j] & ~hm) | ((sv>>8) & hm);    
         
         if(s >= 2){
-            j--;
-            if(j >= 0){
-                val->bytes[j] = (sv & hm) >> 8;
+            j++;
+            if(j < val->n){
+                val->bytes[j] = (sv & lm);
             }
         }
         s = (s + 6)%8;

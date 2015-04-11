@@ -11,7 +11,7 @@
 
 #define FILENAME "challenge6.txt"
 
-#define DEBUG_CHALLENGE_6
+//#define DEBUG_CHALLENGE_6
 
 static int read_int(struct bigint * bi)
 {
@@ -72,7 +72,7 @@ static int read_int(struct bigint * bi)
             free(rev);
             goto out;
         }else{
-            printf("Reverse conversion OK\n");
+            printf("Reverse conversion OK:\n%s\n",rev);
 
         }
         free(rev);
@@ -144,10 +144,13 @@ void try_challenge6()
         struct bigint code;
         code.n = keysize;   
         code.bytes = malloc(keysize);
+#ifdef DEBUG_CHALLENGE_6
+		printf("KeySize: %d\n",keysize);
+#endif
         for(i=0; i<keysize; i++){
             int sz = (bi.n/keysize);
             struct bigint local;
-            int maxScore = 0;
+            int thisScore = 0;
             if(i+keysize*sz < bi.n){
                 sz++;
             }
@@ -158,13 +161,22 @@ void try_challenge6()
                 local.bytes[j] = bi.bytes[i+j*keysize];
             }
             
-            code.bytes[i] = getBestXorScore(&local,&maxScore);
+            code.bytes[i] = getBestXorScore(&local,&thisScore);
+#ifdef DEBUG_CHALLENGE_6
+			printf(" [%02d]: Code: 0x%02x(%c), Score: %d, sz: %d\n",i,code.bytes[i],((code.bytes[i] >= 0x20 && code.bytes[i] < 0x80)?code.bytes[i]:'_'),thisScore,sz);
+#endif
             free(local.bytes);
-            keyScore += maxScore;
+            keyScore += thisScore;
         }   
+#ifdef DEBUG_CHALLENGE_6
+		printf("KeyScore: %f, Normalised: %f\n",keyScore,keyScore/keysize);
+#endif
         keyScore /= keysize;
         if(keyScore > maxScore){
-            maxScore = keysize;
+#ifdef DEBUG_CHALLENGE_6
+			printf("New Max Score!");
+#endif
+            maxScore = keyScore;
             if(bestKey.bytes){
                 free(bestKey.bytes);
             }
@@ -177,6 +189,15 @@ void try_challenge6()
     applyRepeatingKeyXor(&bi,&bestKey,&decoded);
     bytesToCharStr(&decoded,&decodedStr);
     printf("Decoded: \n%s\n",decodedStr);
+
+#ifdef DEBUG_CHALLENGE_6
+	{
+		char * rev;
+		val2base64str(&bi,&rev);
+		printf("Sanity check:\n%s\n",rev);
+		free(rev);
+	}
+#endif
     
 #else
     keysize = deduce_key_size(&bi);
@@ -213,7 +234,7 @@ void try_challenge6()
             
             code.bytes[i] = getBestXorScore(&local,&maxScore);
 #ifdef DEBUG_CHALLENGE_6
-            printf("Code: 0x%02x (%c)\n",code.bytes[i],((code.bytes[i] >= 0x20 && code.bytes[i] < 0x80) ? code.bytes[i] : '_'));
+            printf("Code: 0x%02x (%c)\n",code.bytes[i],((code.bytes[i] < 0x80) ? code.bytes[i] : '_'));
             fflush(stdout);
 #endif
             free(local.bytes);
