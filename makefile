@@ -1,12 +1,12 @@
 TARGET=matasano.bin
-SRC=main.c matasano.c hex2base64.c fixedXor.c singleCharXor.c detectSingleCharXor.c repeatingKeyXor.c hammingDistance.c challenge6.c
+SRC=main.c matasano.c hex2base64.c fixedXor.c singleCharXor.c detectSingleCharXor.c repeatingKeyXor.c hammingDistance.c challenge6.c challenge7.c
 CC=gcc
 RANLIB=ranlib
 OBJ=$(SRC:.c=.o)
 WARNINGS=-Wall
 INC=-I.
 DEBUG=1
-LNKFLAG=-lm
+LNKFLAG=-lm -lssl -lcrypto
 
 ifeq ($(DEBUG),1)
 OPTIMIZE=-O0 -g

@@ -1,6 +1,7 @@
 #include "matasano.h"
 #include <string.h>
 #include <stdlib.h>
+#include <stdio.h>
 
 static char val2base64char(uint8_t val);
 static uint8_t hexChar2int(char c);
@@ -182,3 +183,59 @@ int isB64char(uint8_t c)
         (c >= '0' && c<= '9') ||
         c == '+' || c == '/';
 }
+
+int read_int(const char * filename, struct bigint * bi)
+{
+    FILE * f = fopen(filename,"r");
+
+    char * fullString = NULL;
+    ssize_t bufSize = 0;
+    char * line = NULL;
+    ssize_t l;
+    size_t n = 0;
+
+    int ret = -1;
+
+    if(f == NULL){
+        fprintf(stderr,"Could not open %s for reading\n",filename);
+        goto out;
+    }
+
+    while((l = getline(&line,&n,f)) > 0){   
+        char * newString;
+        int newSize;
+        if(line[l-1] == '\n'){
+            l--;
+            line[l] = '\0';
+        }   
+        newSize = bufSize + l + (bufSize ? 0 : 1);
+        newString = realloc(fullString,newSize);
+        if(newString == NULL){
+            fprintf(stderr,"Failure allocating memory\n");
+            free(fullString);
+            free(line);
+            goto out;
+        }
+        memcpy(&newString[(bufSize ? bufSize-1: 0)],line,l);
+        newString[newSize-1] = '\0';
+        fullString = newString;
+        bufSize = newSize;
+    }
+    free(line);
+    line = NULL;
+    n = 0;
+    
+    base642val(fullString,bi);
+
+    ret = 0;
+
+out:
+    if(f){
+        fclose(f);
+    }
+    if(fullString){
+        free(fullString);
+    }
+    return ret;
+}
+
