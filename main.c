@@ -5,12 +5,14 @@
 #include "detectSingleCharXor.h"
 #include "repeatingKeyXor.h"
 #include "hammingDistance.h"
+#include "openssl_wrapper.h"
 #include "challenge6.h"
 #include "challenge7.h"
 
 int main(int argc, char ** argv)
 {
-#if 0
+	openssl_init();
+
     test_hex2base64();
     test_fixedXor();
     try_singleCharXor();
@@ -18,9 +20,8 @@ int main(int argc, char ** argv)
     test_repeatingKeyXor();
     test_hammingDistance();
     try_challenge6();
-#else
 	try_challenge7();
-#endif
-    
+
+	openssl_cleanup();
     return 0;
 }

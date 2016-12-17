@@ -1,8 +1,10 @@
 #include "challenge7.h"
+
+#include <stdio.h>
+#include <stdlib.h>
+
 #include "matasano.h"
-#include <openssl/conf.h>
-#include <openssl/evp.h>
-#include <openssl/err.h>
+#include "openssl_wrapper.h"
 
 #define FILENAME "challenge7.txt"
 
@@ -11,18 +13,21 @@
 void try_challenge7()
 {
     struct bigint bi;
+	char * outstr = NULL;
+	int n = 0;
+	int bufsize = 0;
     read_int(FILENAME,&bi);
     printf("Bi Size: %d\n",bi.n);
 
-	//TODO move this into main initialisation
-	ERR_load_crypto_strings();
-	OpenSSL_add_all_algorithms();
-	OPENSSL_config(NULL);
+	decrypt_bignum(&bi,(unsigned char *)"YELLOW SUBMARINE",&outstr,&bufsize,&n);
 
-	//TODO actually use api - have api wrapper c file and call it from here
-
-	//TODO move this into main cleanup
-	EVP_cleanup();
-	CRYPTO_cleanup_all_ex_data();
-	ERR_free_strings();
+	if(outstr != NULL){
+		printf("Decoded:\n=============\n%s\n=============\n",
+			   outstr);
+		free(outstr);
+		printf("Buffer Size: %d\nText len: %d\n",
+			   bufsize,n);
+	}else{
+		printf("Failed to decode");
+	}
 }
