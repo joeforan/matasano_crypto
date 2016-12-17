@@ -1,5 +1,5 @@
 TARGET=matasano.bin
-SRC=main.c matasano.c hex2base64.c fixedXor.c singleCharXor.c detectSingleCharXor.c repeatingKeyXor.c hammingDistance.c openssl_wrapper.c challenge6.c challenge7.c
+SRC=main.c matasano.c hex2base64.c fixedXor.c singleCharXor.c detectSingleCharXor.c repeatingKeyXor.c hammingDistance.c openssl_wrapper.c challenge6.c challenge7.c challenge8.c
 CC=gcc
 RANLIB=ranlib
 OBJ=$(SRC:.c=.o)
