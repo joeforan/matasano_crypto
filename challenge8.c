@@ -49,14 +49,11 @@ void try_challenge8()
 				matchcount += match;
 			}
 		}
-		printf("Line %d, Matchcount: %d\n",
-			   lineno,matchcount);
 		if(matchcount > bestMatchCount){
 			bestMatchCount = matchcount;
 			bestLine = realloc(bestLine,l+1);
 			bestLineNo = lineno;
 			memcpy(bestLine,line,l+1);
-			printf("New best. Line: %s\n",bestLine);
 		}
 		lineno++;
 	}
